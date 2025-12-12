@@ -1,0 +1,37 @@
+{
+  "name": "netivo/wc-product-set",
+  "description": "Netivo Module for Woocommerce to add Set Product Type",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "version": "0.1",
+  "authors": [
+    {
+      "name": "netivo",
+      "email": "biuro@netivo.pl"
+    },
+    {
+      "name": "Michał Świątek",
+      "email": "michal.swiatek@netivo.pl"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:netivo/wp-core.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:netivo/wp-core-woocommerce.git"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "netivo/wp-core": "^1.1.1",
+    "netivo/woocommerce": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Netivo\\Module\\WooCommerce\\Set\\": "src/"
+    }
+  }
+}
