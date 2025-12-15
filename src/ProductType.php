@@ -10,6 +10,7 @@
 namespace Netivo\Module\WooCommerce\Set;
 
 use Netivo\WooCommerce\Product\Type;
+use Override;
 
 if ( ! defined( 'ABSPATH' ) ) {
     header( 'HTTP/1.0 403 Forbidden' );
@@ -20,7 +21,7 @@ class ProductType extends Type {
 
     public static function register(): void {
         add_filter( 'woocommerce_product_class', [ self::class, 'product_class' ], 10, 4 );
-        add_action( 'woocommerce_package_add_to_cart', [ self::class, 'add_to_cart' ] );
+        add_action( 'woocommerce_set_add_to_cart', [ self::class, 'add_to_cart' ] );
         add_filter( 'product_type_selector', [ self::class, 'add_to_select' ] );
         add_action( 'woocommerce_check_cart_items', [ self::class, 'validate_cart' ] );
         add_action( 'woocommerce_checkout_create_order', [ self::class, 'save_order' ] );
@@ -217,6 +218,14 @@ class ProductType extends Type {
         return $post_id;
     }
 
+    /**
+     * Adjusts the quantity input step for a given product based on its type and metadata.
+     *
+     * @param int $step The default quantity step.
+     * @param \WC_Product $product The product to modify the quantity step for.
+     *
+     * @return int The adjusted quantity step.
+     */
     public static function quantity_input_step( $step, $product ): int {
         if ( $product->get_type() === 'set' ) {
             $items = $product->get_meta( '_items_in_box' );
@@ -226,5 +235,54 @@ class ProductType extends Type {
         }
 
         return $step;
+    }
+
+
+    /**
+     * Constructor method for initializing the class.
+     *
+     * @param mixed $product Product instance to initialize the class with.
+     *
+     * @return void
+     */
+    public function __construct( $product ) {
+        parent::__construct( $product );
+    }
+
+    /**
+     * Gets the product type.
+     *
+     * @return string
+     */
+    public function get_type(): string {
+        return 'set';
+    }
+
+    #[Override]
+    public function is_purchasable(): true {
+        return true;
+    }
+
+    /**
+     * Retrieves the minimum purchase quantity for the package.
+     *
+     * @return int Minimum quantity of items required for purchase.
+     */
+    public function get_min_purchase_quantity(): int {
+        return $this->get_items_in_package();
+    }
+
+    /**
+     * Retrieves the number of items in a package.
+     *
+     * @return int The quantity of items in the package, or the minimum quantity if not set.
+     */
+    public function get_items_in_package(): int {
+        $items = $this->get_meta( '_items_in_box' );
+        if ( ! empty( $items ) ) {
+            return wc_stock_amount( $items );
+        }
+
+        return wc_stock_amount( apply_filters( 'woocommerce_quantity_input_min', 1, $this ) );
     }
 }
